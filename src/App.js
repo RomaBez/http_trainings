@@ -1,7 +1,7 @@
 import "./styles.css";
 import { useEffect, useState } from "react";
-import axios from "axios";
-import fetchArticlesWithTopic from "./articles-api.js";
+import { fetchArticlesWithTopic } from "./articles-api.js";
+import { SearchForm } from "./SearchForm.js";
 
 const ArticleList = ({ items }) => (
   <ul>
@@ -36,9 +36,24 @@ const App = () => {
     fetchArticles();
   }, []);
 
+  const handleSearch = async (topic) => {
+    try {
+      setArticles([]);
+      setError(false);
+      setLoading(true);
+      const data = await fetchArticlesWithTopic(topic);
+      setArticles(data);
+    } catch (error) {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <h1>Latest articles</h1>
+      <SearchForm onSearch={handleSearch} />
       {loading && <p>Loading data, please wait...</p>}
       {error && (
         <p>Whoops, something went wrong! Please try reloading this page!</p>
