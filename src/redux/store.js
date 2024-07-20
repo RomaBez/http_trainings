@@ -1,7 +1,37 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { balanceReducer } from "./balanceSlice";
-import { localeReducer } from "./localeSlice";
-import { act } from "react";
+
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
+import storage from "redux-persist/lib/storage";
+
+import balanceReducer from "./balanceSlice";
+import localeReducer from "./localeSlice";
+
+const balancePersistConfig = {
+  key: "balance",
+  storage,
+};
+
+const persistedBalanceReducer = persistReducer(
+  balancePersistConfig,
+  balanceReducer
+);
+
+const persistedLocaleReducer = persistReducer(
+  {
+    key: "locale",
+    storage,
+  },
+  localeReducer
+);
 
 const initialState = {
   balance: {
@@ -14,10 +44,18 @@ const initialState = {
 
 export const store = configureStore({
   reducer: {
-    balance: balanceReducer,
-    locale: localeReducer,
+    balance: persistedBalanceReducer,
+    locale: persistedLocaleReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
 });
+
+export const persistor = persistStore(store);
 
 // const rootReducer = (state = initialState, action) => {
 //   switch (action.type) {
